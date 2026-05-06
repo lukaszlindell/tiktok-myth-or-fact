@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TikTok Myth or Fact Preview</title>
+    <title>TikTok Myth or Fact</title>
     <style>:root {
   color: #f9fbff;
   background: #090a12;
@@ -485,7 +485,7 @@ h1 {
   }
 
   .quiz-card {
-    min-height: 540px;
+    min-height: 460px;
   }
 
   .reveal-panel {
@@ -503,6 +503,23 @@ h1 {
 
   .final-stats {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .play-area {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .play-area .card-copy h2 {
+    max-width: 16ch;
+    font-size: clamp(2.4rem, 7vw, 4rem);
+  }
+
+  .play-area .reveal-panel {
+    min-height: 460px;
   }
 }
 
@@ -544,7 +561,7 @@ h1 {
           <div class="stat"><span>Accuracy</span><strong data-accuracy>0%</strong></div>
         </section>
 
-        <div data-game></div>
+        <div class="play-area" data-game></div>
       </section>
     </main>
 
