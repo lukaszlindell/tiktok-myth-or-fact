@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TikTok Myth or Fact Preview</title>
+    <style>:root {
+  color: #f9fbff;
+  background: #090a12;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --ink: #f9fbff;
+  --muted: #a7adc5;
+  --panel: rgba(20, 22, 34, 0.78);
+  --panel-solid: #171927;
+  --line: rgba(255, 255, 255, 0.12);
+  --cyan: #20f0ff;
+  --rose: #ff3d81;
+  --lime: #d6ff64;
+  --gold: #ffd166;
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button {
+  font: inherit;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: 18px;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(32, 240, 255, 0.34), transparent 28%),
+    radial-gradient(circle at 88% 4%, rgba(255, 61, 129, 0.26), transparent 26%),
+    linear-gradient(145deg, #080910 0%, #111322 52%, #090a12 100%);
+  overflow-x: hidden;
+}
+
+.game-frame {
+  width: min(100%, 980px);
+  margin: 0 auto;
+}
+
+.topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.eyebrow,
+.category {
+  margin: 0;
+  color: var(--cyan);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1,
+h2 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+h1 {
+  max-width: 12ch;
+  font-size: clamp(2.2rem, 15vw, 4.8rem);
+  line-height: 0.88;
+}
+
+.restart-button,
+.next-button,
+.answer-button {
+  border: 0;
+  cursor: pointer;
+  color: var(--ink);
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    opacity 180ms ease;
+}
+
+.restart-button {
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 14px;
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 800;
+}
+
+.restart-button:active,
+.next-button:active,
+.answer-button:active {
+  transform: scale(0.98);
+}
+
+.progress-wrap {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.progress-track {
+  height: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--cyan), var(--rose), var(--lime));
+  transition: width 300ms ease;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.stat {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 8px;
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+}
+
+.stat span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.stat strong {
+  display: block;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+  font-size: clamp(1rem, 4vw, 1.42rem);
+  line-height: 1;
+}
+
+.quiz-card {
+  position: relative;
+  min-height: 430px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  padding: 18px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)),
+    var(--panel);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.quiz-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(32, 240, 255, 0.8), rgba(255, 61, 129, 0.6), rgba(214, 255, 100, 0.65));
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.card-art {
+  position: absolute;
+  inset: 0;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.orbit {
+  position: absolute;
+  border: 2px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  transform: rotate(-16deg);
+}
+
+.orbit-one {
+  width: 220px;
+  height: 92px;
+  top: 28px;
+  right: -78px;
+  border-color: rgba(32, 240, 255, 0.55);
+}
+
+.orbit-two {
+  width: 250px;
+  height: 110px;
+  bottom: 110px;
+  left: -128px;
+  border-color: rgba(255, 61, 129, 0.55);
+}
+
+.pulse-dot {
+  position: absolute;
+  width: 118px;
+  height: 118px;
+  right: -18px;
+  bottom: 48px;
+  border-radius: 50%;
+  background: conic-gradient(from 110deg, var(--rose), var(--cyan), var(--lime), var(--rose));
+  filter: blur(0.2px);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+.spark {
+  position: absolute;
+  width: 14px;
+  height: 54px;
+  border-radius: 999px;
+  background: var(--gold);
+  box-shadow: 20px 20px 0 rgba(32, 240, 255, 0.78);
+}
+
+.spark-one {
+  left: 22px;
+  top: 38px;
+  transform: rotate(28deg);
+}
+
+.spark-two {
+  right: 86px;
+  top: 112px;
+  transform: rotate(-26deg) scale(0.68);
+  background: var(--lime);
+}
+
+.card-copy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 260px;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-copy h2 {
+  margin-top: 14px;
+  max-width: 14ch;
+  font-size: clamp(2.1rem, 11vw, 4.6rem);
+  line-height: 0.94;
+}
+
+.answer-actions {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.answer-button {
+  display: flex;
+  min-height: 76px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 8px;
+  font-size: 1.24rem;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.answer-button span {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.answer-button.myth {
+  background: linear-gradient(135deg, #ff3d81, #b327ff);
+}
+
+.answer-button.fact {
+  background: linear-gradient(135deg, #0eb9ff, #16d994);
+}
+
+.answer-button.locked {
+  opacity: 0.54;
+  cursor: default;
+}
+
+.answer-button.correct-choice,
+.answer-button.wrong-choice {
+  opacity: 1;
+}
+
+.answer-button.correct-choice {
+  box-shadow: 0 0 0 4px rgba(214, 255, 100, 0.35);
+}
+
+.answer-button.wrong-choice {
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.24);
+  filter: grayscale(0.25);
+}
+
+.reveal-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-top: 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  opacity: 0;
+  transform: translateY(-8px);
+  transition:
+    grid-template-rows 280ms ease,
+    opacity 280ms ease,
+    transform 280ms ease,
+    border-color 280ms ease,
+    padding 280ms ease;
+}
+
+.reveal-panel.show {
+  grid-template-rows: 1fr;
+  padding: 16px;
+  border-color: var(--line);
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-panel > * {
+  overflow: hidden;
+}
+
+.reveal-panel p {
+  margin: 0;
+  color: #d7dcf2;
+  line-height: 1.55;
+}
+
+.reveal-panel .result {
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-size: 1.1rem;
+  font-weight: 950;
+}
+
+.result.correct {
+  text-shadow: 0 0 20px rgba(214, 255, 100, 0.42);
+}
+
+.result.incorrect {
+  text-shadow: 0 0 20px rgba(255, 61, 129, 0.42);
+}
+
+.next-button {
+  width: 100%;
+  min-height: 58px;
+  margin-top: 16px;
+  border-radius: 8px;
+  background: #f9fbff;
+  color: #10111b;
+  font-weight: 950;
+}
+
+.end-screen {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  padding: 22px;
+  background: var(--panel-solid);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.end-badge {
+  display: grid;
+  width: 98px;
+  height: 98px;
+  margin-bottom: 20px;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(var(--cyan), var(--rose), var(--lime), var(--cyan));
+}
+
+.end-badge span {
+  width: 70px;
+  height: 70px;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, transparent 42%, #111322 42% 58%, transparent 58%),
+    linear-gradient(#111322 44%, transparent 44% 56%, #111322 56%);
+}
+
+.end-screen h2 {
+  margin-top: 8px;
+  font-size: clamp(2.2rem, 13vw, 4.5rem);
+  line-height: 0.92;
+}
+
+.end-copy {
+  margin: 14px 0 18px;
+  color: #d7dcf2;
+  font-size: 1.08rem;
+  line-height: 1.45;
+}
+
+.final-stats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(0.96) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.05) rotate(8deg);
+  }
+}
+
+@media (min-width: 620px) {
+  .app-shell {
+    padding: 32px;
+  }
+
+  h1 {
+    max-width: 16ch;
+  }
+
+  .answer-actions,
+  .final-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .quiz-card {
+    min-height: 500px;
+    padding: 28px;
+  }
+}
+
+@media (min-width: 880px) {
+  .game-frame {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 20px;
+  }
+
+  .topbar,
+  .progress-wrap,
+  .stats-grid {
+    grid-column: 1 / -1;
+  }
+
+  .quiz-card {
+    min-height: 540px;
+  }
+
+  .reveal-panel {
+    align-self: stretch;
+    margin-top: 0;
+  }
+
+  .reveal-panel.show {
+    padding: 22px;
+  }
+
+  .end-screen {
+    grid-column: 1 / -1;
+  }
+
+  .final-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="game-frame" aria-label="TikTok Myth or Fact quiz game">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Swipe-bright quiz energy</p>
+            <h1>TikTok Myth or Fact</h1>
+          </div>
+          <button class="restart-button" type="button" data-action="restart">Restart</button>
+        </header>
+
+        <div class="progress-wrap" aria-label="Quiz progress">
+          <div class="progress-track">
+            <span class="progress-fill" data-progress></span>
+          </div>
+          <span data-count>0/0</span>
+        </div>
+
+        <section class="stats-grid" aria-label="Current quiz stats">
+          <div class="stat"><span>Score</span><strong data-score>0/0</strong></div>
+          <div class="stat"><span>Streak</span><strong data-streak>0</strong></div>
+          <div class="stat"><span>Best</span><strong data-best>0</strong></div>
+          <div class="stat"><span>Left</span><strong data-left>0</strong></div>
+          <div class="stat"><span>Accuracy</span><strong data-accuracy>0%</strong></div>
+        </section>
+
+        <div data-game></div>
+      </section>
+    </main>
+
+    <script>
+      const state = {
+        deck: [],
+        currentIndex: 0,
+        selectedAnswer: null,
+        answeredCards: [],
+        streak: 0,
+        longestStreak: 0,
+      };
+
+      const labels = { myth: 'Myth', fact: 'Fact' };
+      const game = document.querySelector('[data-game]');
+
+      function shuffle(cards) {
+        return [...cards]
+          .map((card) => ({ card, sort: crypto.getRandomValues(new Uint32Array(1))[0] }))
+          .sort((a, b) => a.sort - b.sort)
+          .map(({ card }) => card);
+      }
+
+      function normalize(card) {
+        return { ...card, id: String(card.id), answer: String(card.answer).toLowerCase() };
+      }
+
+      function percent(value) {
+        return `${Math.round(value)}%`;
+      }
+
+      function updateStats() {
+        const total = state.deck.length;
+        const answered = state.answeredCards.length;
+        const correct = state.answeredCards.filter((card) => card.correct).length;
+        const accuracy = answered > 0 ? (correct / answered) * 100 : 0;
+        document.querySelector('[data-progress]').style.width = `${total ? (answered / total) * 100 : 0}%`;
+        document.querySelector('[data-count]').textContent = `${answered}/${total}`;
+        document.querySelector('[data-score]').textContent = `${correct}/${answered}`;
+        document.querySelector('[data-streak]').textContent = state.streak;
+        document.querySelector('[data-best]').textContent = state.longestStreak;
+        document.querySelector('[data-left]').textContent = Math.max(total - answered, 0);
+        document.querySelector('[data-accuracy]').textContent = percent(accuracy);
+      }
+
+      function answerCard(answer) {
+        const card = state.deck[state.currentIndex];
+        if (!card || state.selectedAnswer) return;
+        const correct = answer === card.answer;
+        state.selectedAnswer = answer;
+        state.streak = correct ? state.streak + 1 : 0;
+        state.longestStreak = Math.max(state.longestStreak, state.streak);
+        state.answeredCards.push({ cardId: card.id, selected: answer, correct });
+        render();
+      }
+
+      function nextCard() {
+        state.selectedAnswer = null;
+        state.currentIndex += 1;
+        render();
+      }
+
+      function restart() {
+        state.deck = shuffle(state.deck);
+        state.currentIndex = 0;
+        state.selectedAnswer = null;
+        state.answeredCards = [];
+        state.streak = 0;
+        state.longestStreak = 0;
+        render();
+      }
+
+      function answerButton(answer, card) {
+        const selected = state.selectedAnswer === answer;
+        const correct = card.answer === answer;
+        const classes = [
+          'answer-button',
+          answer,
+          state.selectedAnswer ? 'locked' : '',
+          state.selectedAnswer && correct ? 'correct-choice' : '',
+          selected && !correct ? 'wrong-choice' : '',
+        ]
+          .filter(Boolean)
+          .join(' ');
+        return `<button class="${classes}" type="button" data-answer="${answer}" ${state.selectedAnswer ? 'disabled' : ''} aria-pressed="${selected}">
+          <span>${answer === 'myth' ? '?' : '!'}</span>${labels[answer]}
+        </button>`;
+      }
+
+      function renderEnd() {
+        const total = state.deck.length;
+        const correct = state.answeredCards.filter((card) => card.correct).length;
+        const accuracy = total ? (correct / total) * 100 : 0;
+        game.innerHTML = `<section class="end-screen">
+          <div class="end-badge" aria-hidden="true"><span></span></div>
+          <p class="eyebrow">Round complete</p>
+          <h2>${correct === total ? 'Clean sweep.' : 'Feed refreshed.'}</h2>
+          <p class="end-copy">You scored ${correct} out of ${total} with ${percent(accuracy)} accuracy.</p>
+          <div class="final-stats">
+            <div class="stat"><span>Final score</span><strong>${correct}/${total}</strong></div>
+            <div class="stat"><span>Accuracy</span><strong>${percent(accuracy)}</strong></div>
+            <div class="stat"><span>Longest streak</span><strong>${state.longestStreak}</strong></div>
+          </div>
+          <button class="next-button" type="button" data-action="restart">Play again</button>
+        </section>`;
+      }
+
+      function renderCard() {
+        const card = state.deck[state.currentIndex];
+        const result = state.selectedAnswer
+          ? {
+              correct: state.selectedAnswer === card.answer,
+              label: labels[card.answer],
+            }
+          : null;
+        game.innerHTML = `<article class="quiz-card ${state.selectedAnswer ? 'is-revealed' : ''}">
+          <div class="card-art" aria-hidden="true">
+            <span class="orbit orbit-one"></span>
+            <span class="orbit orbit-two"></span>
+            <span class="pulse-dot"></span>
+            <span class="spark spark-one"></span>
+            <span class="spark spark-two"></span>
+          </div>
+          <div class="card-copy">
+            <p class="category">Viral claim</p>
+            <h2>${card.statement}</h2>
+          </div>
+          <div class="answer-actions" aria-label="Choose an answer">
+            ${answerButton('myth', card)}
+            ${answerButton('fact', card)}
+          </div>
+        </article>
+        <section class="reveal-panel ${result ? 'show' : ''}" aria-live="polite">
+          ${
+            result
+              ? `<div>
+                  <p class="result ${result.correct ? 'correct' : 'incorrect'}">${result.correct ? 'Correct' : 'Not quite'}: it is ${result.label}.</p>
+                  <p>${card.explanation}</p>
+                  <button class="next-button" type="button" data-action="next">${state.currentIndex === state.deck.length - 1 ? 'See results' : 'Next card'}</button>
+                </div>`
+              : ''
+          }
+        </section>`;
+      }
+
+      function render() {
+        updateStats();
+        if (state.currentIndex >= state.deck.length) {
+          renderEnd();
+        } else {
+          renderCard();
+        }
+      }
+
+      document.addEventListener('click', (event) => {
+        const target = event.target.closest('button');
+        if (!target) return;
+        if (target.dataset.answer) answerCard(target.dataset.answer);
+        if (target.dataset.action === 'next') nextCard();
+        if (target.dataset.action === 'restart') restart();
+      });
+
+      Promise.resolve([
+  {
+    "id": 1,
+    "statement": "TikTok is owned by the Chinese government.",
+    "answer": "Myth",
+    "explanation": "ByteDance is majority owned by global institutional investors, not any government."
+  },
+  {
+    "id": 2,
+    "statement": "ByteDance is mostly owned by Chinese state actors.",
+    "answer": "Myth",
+    "explanation": "About 60% is owned by global investors, around 20% by employees, and around 20% by the founder."
+  },
+  {
+    "id": 3,
+    "statement": "TikTok is headquartered in China.",
+    "answer": "Myth",
+    "explanation": "TikTok’s main offices are in Los Angeles and Singapore."
+  },
+  {
+    "id": 4,
+    "statement": "TikTok is available in mainland China.",
+    "answer": "Myth",
+    "explanation": "TikTok does not operate in mainland China. A separate app, Douyin, is used there."
+  },
+  {
+    "id": 5,
+    "statement": "There are Chinese government officials on ByteDance’s board.",
+    "answer": "Myth",
+    "explanation": "The board consists of private individuals, none representing any government."
+  },
+  {
+    "id": 6,
+    "statement": "ByteDance’s board is dominated by global investors.",
+    "answer": "Fact",
+    "explanation": "Most board members represent international investors, not governments."
+  },
+  {
+    "id": 7,
+    "statement": "TikTok decisions are made in Beijing.",
+    "answer": "Myth",
+    "explanation": "TikTok leadership is based in Singapore, the US, and Ireland."
+  },
+  {
+    "id": 8,
+    "statement": "TikTok’s CEO is based in Singapore.",
+    "answer": "Fact",
+    "explanation": "TikTok CEO Shou Chew operates from Singapore and oversees global decisions."
+  },
+  {
+    "id": 9,
+    "statement": "Governments can influence TikTok’s recommendation algorithm.",
+    "answer": "Myth",
+    "explanation": "TikTok does not allow any government to influence its recommendation systems."
+  },
+  {
+    "id": 10,
+    "statement": "TikTok content is primarily created by users, not the company.",
+    "answer": "Fact",
+    "explanation": "Content on TikTok is generated by its community."
+  },
+  {
+    "id": 11,
+    "statement": "TikTok moderators are based in China.",
+    "answer": "Myth",
+    "explanation": "Content moderation is led by Trust and Safety teams in the US and Ireland."
+  },
+  {
+    "id": 12,
+    "statement": "TikTok removes content without moderation review.",
+    "answer": "Myth",
+    "explanation": "All removals go through established moderation processes based on Community Guidelines."
+  },
+  {
+    "id": 13,
+    "statement": "TikTok must follow EU and local laws in Europe.",
+    "answer": "Fact",
+    "explanation": "European TikTok entities are governed by EU, Irish, and UK law."
+  },
+  {
+    "id": 14,
+    "statement": "China can legally force TikTok to hand over European user data.",
+    "answer": "Myth",
+    "explanation": "Data stored in Europe is subject to European laws, not Chinese law."
+  },
+  {
+    "id": 15,
+    "statement": "TikTok stores European user data in China.",
+    "answer": "Myth",
+    "explanation": "European data is stored in dedicated infrastructure in Europe and the US."
+  },
+  {
+    "id": 16,
+    "statement": "TikTok has independent oversight of its European data security.",
+    "answer": "Fact",
+    "explanation": "External cybersecurity firm NCC Group audits and monitors data controls."
+  },
+  {
+    "id": 17,
+    "statement": "TikTok collects significantly more data than other apps.",
+    "answer": "Myth",
+    "explanation": "Data collection is in line with industry practices."
+  },
+  {
+    "id": 18,
+    "statement": "TikTok discloses what data it collects and how it is used.",
+    "answer": "Fact",
+    "explanation": "Data collection and use are explained in its privacy policy."
+  },
+  {
+    "id": 19,
+    "statement": "TikTok records keystrokes when users browse external sites.",
+    "answer": "Myth",
+    "explanation": "The app does not monitor what users type on third-party websites."
+  },
+  {
+    "id": 20,
+    "statement": "TikTok uses face or voice recognition to identify users.",
+    "answer": "Myth",
+    "explanation": "The app does not use biometric identification."
+  },
+  {
+    "id": 21,
+    "statement": "TikTok has safety restrictions for teenage users.",
+    "answer": "Fact",
+    "explanation": "Teen accounts have stricter default settings and protections."
+  },
+  {
+    "id": 22,
+    "statement": "Accounts under 16 can send direct messages on TikTok.",
+    "answer": "Myth",
+    "explanation": "Direct messaging is disabled for users under 16."
+  },
+  {
+    "id": 23,
+    "statement": "TikTok sets a default screen time limit for teens.",
+    "answer": "Fact",
+    "explanation": "Accounts under 18 have a 60-minute daily screen time limit by default."
+  },
+  {
+    "id": 24,
+    "statement": "TikTok allows content that promotes self-harm.",
+    "answer": "Myth",
+    "explanation": "Content promoting self-harm is prohibited."
+  },
+  {
+    "id": 25,
+    "statement": "TikTok removes harmful content using both AI and human moderators.",
+    "answer": "Fact",
+    "explanation": "Moderation combines automated systems with trained safety teams."
+  },
+  {
+    "id": 26,
+    "statement": "TikTok removes content on behalf of governments without checks.",
+    "answer": "Myth",
+    "explanation": "Content is only removed if it violates policies or valid legal requirements."
+  },
+  {
+    "id": 27,
+    "statement": "TikTok can receive government requests to remove content.",
+    "answer": "Fact",
+    "explanation": "Requests are reviewed and only acted on if legally valid or policy-violating."
+  },
+  {
+    "id": 28,
+    "statement": "TikTok bans political advertising globally.",
+    "answer": "Fact",
+    "explanation": "Paid political ads are not allowed on the platform."
+  },
+  {
+    "id": 29,
+    "statement": "TikTok promotes misinformation to increase engagement.",
+    "answer": "Myth",
+    "explanation": "Policies prohibit harmful misinformation."
+  },
+  {
+    "id": 30,
+    "statement": "TikTok partners with external experts to address misinformation.",
+    "answer": "Fact",
+    "explanation": "The platform works with fact-checkers and experts globally."
+  },
+  {
+    "id": 31,
+    "statement": "TikTok allows dangerous viral challenges without restriction.",
+    "answer": "Myth",
+    "explanation": "Dangerous challenges are prohibited or restricted."
+  },
+  {
+    "id": 32,
+    "statement": "TikTok has tools for users to control what they see.",
+    "answer": "Fact",
+    "explanation": "Users can filter content and adjust recommendations."
+  },
+  {
+    "id": 33,
+    "statement": "TikTok does not invest in user safety features.",
+    "answer": "Myth",
+    "explanation": "The platform continuously introduces safety tools."
+  },
+  {
+    "id": 34,
+    "statement": "TikTok applies strict rules to what appears in the For You feed.",
+    "answer": "Fact",
+    "explanation": "Content must meet eligibility standards to be recommended."
+  },
+  {
+    "id": 35,
+    "statement": "TikTok had an internal misuse of data incident.",
+    "answer": "Fact",
+    "explanation": "A small group misused access and was dismissed."
+  },
+  {
+    "id": 36,
+    "statement": "TikTok runs a systematic program to spy on journalists.",
+    "answer": "Myth",
+    "explanation": "The company condemned the isolated incident and took action."
+  }
+]
+)
+        .then((cards) => {
+          state.deck = shuffle(cards.map(normalize));
+          render();
+        });
+    </script>
+  </body>
+</html>
